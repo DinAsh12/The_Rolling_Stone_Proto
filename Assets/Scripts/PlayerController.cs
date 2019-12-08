@@ -7,12 +7,15 @@ public class PlayerController : MonoBehaviour
     [Header("Player Movement Settings")]
     public Rigidbody2D stoneBody;
     public float moveForce;
-    public float jumpForce;
+    private BoxCollider2D boxCollider2d;
+    [SerializeField] private LayerMask platformsLayerMask;
+
     public Vector2 maximumVelocity = new Vector2(20.0f, 20.0f);
     // Start is called before the first frame update
     void Start()
     {
-        
+        boxCollider2d = transform.GetComponent<BoxCollider2D>();
+        stoneBody = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
@@ -22,25 +25,28 @@ public class PlayerController : MonoBehaviour
     }
     void Movement()
     {
-        // Gets Horizontal axis and move right
-        if ((Input.GetAxis("Horizontal") > 0) && stoneBody.transform.position.y <= -2)
+
+        stoneBody.velocity = new Vector2(Input.GetAxis("Horizontal") * moveForce, 0);
+
+        
+
+        if (IsGrounded() && Input.GetKeyDown(KeyCode.UpArrow))
         {
-             stoneBody.AddForce(Vector2.right * moveForce);
+            float jumpVelocity = 100f;
+            stoneBody.velocity = (Vector2.up * jumpVelocity);
         }
-        // Gets Horizontal axis and move left
-        if ((Input.GetAxis("Horizontal") < 0) && stoneBody.transform.position.y <= -2)
-        {
-             stoneBody.AddForce(Vector2.left * moveForce);
-        }
-        // Jump
-        if ((Input.GetAxis("Jump") > 0) && stoneBody.transform.position.y <= -2.3)
-        {
-            stoneBody.gravityScale = 1;
-            stoneBody.AddForce(Vector2.up * jumpForce);
-        }
-        stoneBody.velocity = new Vector2(
-            Mathf.Clamp(stoneBody.velocity.x, -maximumVelocity.x, maximumVelocity.x),
-            Mathf.Clamp(stoneBody.velocity.y, -maximumVelocity.y, maximumVelocity.y)
-            );
+
+
+        
+    }
+    
+
+    private bool IsGrounded()
+    {
+        RaycastHit2D raycastHit2d = Physics2D.BoxCast(boxCollider2d.bounds.center, boxCollider2d.bounds.size, 0f, Vector2.down * 0.1f, platformsLayerMask);
+
+            //(boxCollider2d.bounds.center, boxCollider2d.bounds.size, 0f, Vector2.down * 1f,platformsLayerMask);
+        Debug.Log(raycastHit2d.collider);
+        return raycastHit2d.collider != null;
     }
 }
